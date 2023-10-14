@@ -45,7 +45,7 @@ public class TestYml {
             {
                 bt.MaterialsAwarded.add(ItemStackHelper.fromSimpleString((String)output));
             }
-            logger.info(String.format("%s is valid? %s", bt.name, bt.isValid()));
+            logger.info(String.format("%s is valid? %s", bt.Name, bt.isValid()));
         }
         logger.info(cfgFile.toString());
     }

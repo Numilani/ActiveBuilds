@@ -5,6 +5,7 @@ import org.bukkit.Location;
 
 @Data
 public class Building {
+    public int Id;
     public BuildingType Type;
     public String Name;
     public Location InputLocation;

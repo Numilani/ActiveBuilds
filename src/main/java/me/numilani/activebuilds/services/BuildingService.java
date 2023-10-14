@@ -1,12 +1,10 @@
 package me.numilani.activebuilds.services;
 
 import me.numilani.activebuilds.ActiveBuilds;
-import me.numilani.activebuilds.objects.Building;
 import org.bukkit.block.Container;
 import org.bukkit.inventory.ItemStack;
 
 import java.sql.SQLException;
-import java.util.List;
 
 public class BuildingService {
     private ActiveBuilds plugin;
@@ -18,14 +16,14 @@ public class BuildingService {
     public void runBuildingUpdate() throws SQLException {
         var buildings = plugin.dataSource.getAllBuildings();
 
-        if (buildings == null){
+        if (buildings.isEmpty()){
             plugin.getLogger().warning("There are no buildings to run!");
             return;
         }
 
         for (var bldg : buildings)
         {
-            if (bldg.Type.name.equals("TYPE_UNAVAILABLE" ) || bldg.InputLocation == null || bldg.OutputLocation == null){
+            if (bldg.Type.Name.equals("TYPE_UNAVAILABLE" ) || bldg.InputLocation == null || bldg.OutputLocation == null){
                 continue;
             }
 
@@ -36,7 +34,7 @@ public class BuildingService {
             var allInputsPresent = true;
             for (var input : bldg.Type.getMaterialsConsumed())
             {
-                if (!inputChest.getInventory().contains(input.getType(), input.getAmount())){
+                if (!inputChest.getInventory().contains(input)){
                     allInputsPresent = false;
                 }
             }

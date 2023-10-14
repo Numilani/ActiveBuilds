@@ -6,7 +6,7 @@ plugins {
 }
 
 group = 'me.numilani'
-version = '1.0.0'
+version = '1.1.0'
 
 repositories {
     mavenCentral()
@@ -24,6 +24,9 @@ repositories {
     maven {
         url = 'https://repo.rpkit.com/repository/maven-releases/'
     }
+    maven {
+        url = 'https://repo.codemc.org/repository/maven-public'
+    }
 }
 
 dependencies {
@@ -34,6 +37,7 @@ dependencies {
     compileOnly 'org.bergerhealer.cloud.commandframework:cloud-paper:1.6.0'
     compileOnly 'org.bergerhealer.cloud.commandframework:cloud-annotations:1.8.0-SNAPSHOT'
     compileOnly 'org.bergerhealer.cloud.commandframework:cloud-minecraft-extras:1.8.0-SNAPSHOT'
+    implementation 'io.github.bananapuncher714:nbteditor:7.19.0'
     testImplementation platform('org.junit:junit-bom:5.10.0')
     testImplementation 'org.junit.jupiter:junit-jupiter'
 }

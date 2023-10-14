@@ -2,14 +2,18 @@ package me.numilani.activebuilds.commands;
 
 import cloud.commandframework.annotations.Argument;
 import cloud.commandframework.annotations.CommandMethod;
+import io.github.bananapuncher714.nbteditor.NBTEditor;
 import me.numilani.activebuilds.ActiveBuilds;
 import me.numilani.activebuilds.utils.BlockLocationHelper;
 import org.bukkit.Material;
 import org.bukkit.block.Container;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.Inventory;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class BuildCommandHandler {
     private ActiveBuilds plugin;
@@ -18,12 +22,12 @@ public class BuildCommandHandler {
         this.plugin = plugin;
     }
 
-    @CommandMethod("ab buildingtypes")
-    public void getBuildingTypeInfo(CommandSender sender){
+    @CommandMethod("ab buildingtype list")
+    public void getBuildingTypeInfo(CommandSender sender) throws SQLException {
         sender.sendMessage("=== BUILDING TYPES ===");
-        for (var type : plugin.cfg.getBuildings())
+        for (var type : plugin.dataSource.getAllBuildingTypes(true))
         {
-            sender.sendMessage(String.format("++ %s ++", type.name));
+            sender.sendMessage(String.format("++ %s ++", type.Name));
             for (var input : type.getMaterialsConsumed())
             {
                 sender.sendMessage(String.format(" - Consumes %s %s", input.getAmount(), input.getType()));
@@ -35,15 +39,95 @@ public class BuildCommandHandler {
         }
     }
 
+    @CommandMethod("ab buildingtype create <name>")
+    public void createBuildingType(CommandSender sender, @Argument("name") String name) throws SQLException {
+        if (plugin.dataSource.getBuildingType(name, false) != null){
+            sender.sendMessage("That buildingtype already exists!");
+            return;
+        }
+        plugin.dataSource.createBuildingType(name);
+        sender.sendMessage(String.format("Buildingtype %s created! Be sure to set its inputs/outputs!", name));
+    }
+
+    @CommandMethod("ab buildingtype update <name> inputs")
+    public void setBuildingTypeInputs(CommandSender sender, @Argument("name") String name) throws SQLException{
+        if (!(sender instanceof Player)){
+            sender.sendMessage("You must run this command as a player!");
+            return;
+        }
+
+        var target = ((Player) sender).getTargetBlock(null, 8);
+        if (target.getType() != Material.CHEST){
+            sender.sendMessage("That is not a chest!");
+            return;
+        }
+
+        List<String> items = new ArrayList<>();
+        var inputInv = ((Container)target.getState()).getInventory().getContents();
+        for (var item : inputInv) {
+            if (item == null) continue;
+            var x = NBTEditor.getNBTCompound(item);
+            items.add(x.toJson());
+        }
+        String serializedItems = "";
+        for (int i = 0; i < items.size(); i++) {
+            if (i > 0){
+                serializedItems += "|";
+            }
+            serializedItems += items.get(i);
+        }
+        plugin.dataSource.updateBuildingTypeInputs(name, serializedItems);
+    }
+
+    @CommandMethod("ab buildingtype update <name> outputs")
+    public void setBuildingTypeOutputs(CommandSender sender, @Argument("name") String name) throws SQLException{
+        if (!(sender instanceof Player)){
+            sender.sendMessage("You must run this command as a player!");
+            return;
+        }
+
+        var target = ((Player) sender).getTargetBlock(null, 8);
+        if (target.getType() != Material.CHEST){
+            sender.sendMessage("That is not a chest!");
+            return;
+        }
+
+        List<String> items = new ArrayList<>();
+        var inputInv = ((Container)target.getState()).getInventory().getContents();
+        for (var item : inputInv) {
+            if (item == null) continue;
+            var x = NBTEditor.getNBTCompound(item);
+            items.add(x.toJson());
+        }
+        String serializedItems = "";
+        for (int i = 0; i < items.size(); i++) {
+            if (i > 0){
+                serializedItems += "|";
+            }
+            serializedItems += items.get(i);
+        }
+        plugin.dataSource.updateBuildingTypeOutputs(name, serializedItems);
+    }
+
+    @CommandMethod("ab buildingtype remove <name>")
+    public void removeBuildingType(CommandSender sender, @Argument("name") String name) throws SQLException{
+        if (plugin.dataSource.getBuildingType(name, false) == null){
+            sender.sendMessage("That buildingtype doesn't exist!");
+            return;
+        }
+        plugin.dataSource.deleteBuildingType(name);
+        sender.sendMessage(String.format("Buildingtype %s removed!", name));
+    }
+
     @CommandMethod("ab building create <name> <type>")
     public void createBuilding(CommandSender sender, @Argument("name") String name, @Argument("type") String type) throws SQLException {
-        var x = plugin.cfg.getBuildings().stream().filter(bldg -> bldg.name.equals(type)).findFirst();
-        if (!x.isPresent()){
+//        var x = plugin.cfg.getBuildings().stream().filter(bldg -> bldg.Name.equals(type)).findFirst();
+        var x = plugin.dataSource.getAllBuildingTypes(true).stream().filter(bldg -> bldg.Name.equals(type)).findFirst();
+        if (x.isEmpty()){
             sender.sendMessage("Unknown building type!");
             return;
         }
 
-        // TODO: write a check for the building name here after the data layer is written
         if (plugin.dataSource.getBuilding(name) != null){
             sender.sendMessage("A building with this name already exists!");
             return;
@@ -55,6 +139,25 @@ public class BuildCommandHandler {
         sender.sendMessage(String.format("Building %s created! Designate input/output chests with /ab building update %s (input|output)", name, name, name));
 
 
+    }
+
+    @CommandMethod("ab building list")
+    public void listBuildings(CommandSender sender) throws SQLException{
+        var buildings = plugin.dataSource.getAllBuildings();
+
+        if (buildings.isEmpty()){
+            sender.sendMessage("No buildings found!");
+            return;
+        }
+
+        sender.sendMessage("=== Buildings ===");
+        for (var bldg : buildings)
+        {
+            sender.sendMessage(String.format("%s", bldg.Name));
+            sender.sendMessage(String.format("  Type: %s", bldg.Type.Name));
+            sender.sendMessage(String.format("  InLoc: (%s,%s,%s)", bldg.getInputLocation().getBlockX(), bldg.getInputLocation().getBlockY(), bldg.getInputLocation().getBlockZ()));
+            sender.sendMessage(String.format("  OutLoc: (%s,%s,%s)", bldg.getOutputLocation().getBlockX(), bldg.getOutputLocation().getBlockY(), bldg.getOutputLocation().getBlockZ()));
+        }
     }
 
     @CommandMethod("ab building update <name> input")
@@ -108,30 +211,28 @@ public class BuildCommandHandler {
         sender.sendMessage(String.format("Last building update: %s", plugin.dataSource.getLastBuildingUpdateTime().toString()));
     }
 
+    @CommandMethod("ab debug list-all-types")
+    public void getInvalidBuildingTypeInfo(CommandSender sender) throws SQLException {
+        sender.sendMessage("=== BUILDING TYPES ===");
+        for (var type : plugin.dataSource.getAllBuildingTypes(false))
+        {
+            sender.sendMessage(String.format("++ %s ++", type.Name));
+            for (var input : type.getMaterialsConsumed())
+            {
+                sender.sendMessage(String.format(" - Consumes %s %s", input.getAmount(), input.getType()));
+            }
+            for (var output : type.getMaterialsAwarded())
+            {
+                sender.sendMessage(String.format(" - Outputs %s %s", output.getAmount(), output.getType()));
+            }
+        }
+    }
+
     @CommandMethod("ab debug run-now")
     public void RunNow(CommandSender sender) throws SQLException {
 
         plugin.buildingService.runBuildingUpdate();
         sender.sendMessage("Buildings updated!");
-    }
-
-    @CommandMethod("ab debug list-buildings")
-    public void listBuildings(CommandSender sender) throws SQLException{
-        var buildings = plugin.dataSource.getAllBuildings();
-
-        if (buildings == null){
-            sender.sendMessage("No buildings found!");
-            return;
-        }
-
-        sender.sendMessage("=== Buildings ===");
-        for (var bldg : buildings)
-        {
-            sender.sendMessage(String.format("%s", bldg.Name));
-            sender.sendMessage(String.format("  Type: %s", bldg.Type.name));
-            sender.sendMessage(String.format("  InLoc: (%s,%s,%s)", bldg.getInputLocation().getBlockX(), bldg.getInputLocation().getBlockY(), bldg.getInputLocation().getBlockZ()));
-            sender.sendMessage(String.format("  OutLoc: (%s,%s,%s)", bldg.getOutputLocation().getBlockX(), bldg.getOutputLocation().getBlockY(), bldg.getOutputLocation().getBlockZ()));
-        }
     }
 
     @CommandMethod("ab reload")

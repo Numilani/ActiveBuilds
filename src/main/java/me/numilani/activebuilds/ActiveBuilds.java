@@ -75,30 +75,15 @@ public final class ActiveBuilds extends JavaPlugin {
 
         try{
             cfg.setCheckInterval(cfgFile.get("settings.checkInterval", Integer.class));
-            cfg.loadBuildings(cfgFile.getNode("buildings").getNodes());
         }
         catch (Exception ex){
             getLogger().severe("Failure while loading config file! Is everything formatted correctly?");
-//            if (isReload){
-//                cfg = old_cfg;
-//            }
-//            else{
-//                getServer().getPluginManager().disablePlugin(this);
-//            }
         }
     }
 
     private void doPluginInit() {
         var cfgFile = new FileConfiguration(this, "config.yml");
         cfgFile.set("settings.checkInterval", 90);
-
-        cfgFile.set("buildings.testMine.name", "mine_stone-iron");
-        cfgFile.set("buildings.testMine.inputs", Arrays.asList(new ItemStack(Material.STONE_PICKAXE, 1).toSimpleString(), new ItemStack(Material.STONE_PICKAXE, 1).toSimpleString(), new ItemStack(Material.STONE_PICKAXE, 1).toSimpleString(), new ItemStack(Material.TORCH, 8).toSimpleString()));
-        cfgFile.set("buildings.testMine.outputs", Arrays.asList(new ItemStack(Material.COBBLESTONE, 192).toSimpleString(), new ItemStack(Material.IRON_ORE, 14).toSimpleString()));
-
-        cfgFile.set("buildings.testMill.name", "lumbermill_spruce");
-        cfgFile.set("buildings.testMill.inputs", Arrays.asList(new ItemStack(Material.STONE_AXE, 1).toSimpleString(), new ItemStack(Material.STONE_AXE, 1).toSimpleString(), new ItemStack(Material.STONE_AXE, 1).toSimpleString(), new ItemStack(Material.SPRUCE_SAPLING, 8).toSimpleString()));
-        cfgFile.set("buildings.testMill.outputs", Arrays.asList(new ItemStack(Material.SPRUCE_LOG, 128).toSimpleString(), new ItemStack(Material.SPRUCE_LEAVES, 64).toSimpleString()));
 
         cfgFile.saveSync();
     }

@@ -2,6 +2,7 @@ package me.numilani.activebuilds.commands;
 
 import cloud.commandframework.annotations.Argument;
 import cloud.commandframework.annotations.CommandMethod;
+import cloud.commandframework.annotations.CommandPermission;
 import io.github.bananapuncher714.nbteditor.NBTEditor;
 import me.numilani.activebuilds.ActiveBuilds;
 import me.numilani.activebuilds.utils.BlockLocationHelper;
@@ -15,6 +16,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+@CommandPermission("activebuilds.admin")
 public class BuildCommandHandler {
     private ActiveBuilds plugin;
 

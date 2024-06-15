@@ -1,5 +1,9 @@
 package me.numilani.activebuilds;
 
+import cloud.commandframework.annotations.AnnotationParser;
+import cloud.commandframework.execution.CommandExecutionCoordinator;
+import cloud.commandframework.meta.SimpleCommandMeta;
+import cloud.commandframework.paper.PaperCommandManager;
 import com.bergerkiller.bukkit.common.cloud.CloudSimpleHandler;
 import com.bergerkiller.bukkit.common.config.FileConfiguration;
 import lombok.experimental.ExtensionMethod;
@@ -10,16 +14,20 @@ import me.numilani.activebuilds.objects.ConfigurationContents;
 import me.numilani.activebuilds.services.BuildingService;
 import me.numilani.activebuilds.utils.ItemStackHelper;
 import org.bukkit.Material;
+import org.bukkit.command.CommandSender;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
 
 import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.function.Function;
 
 @ExtensionMethod(ItemStackHelper.class)
 public final class ActiveBuilds extends JavaPlugin {
-    public CloudSimpleHandler cmdHandler = new CloudSimpleHandler();
+//    public CloudSimpleHandler cmdHandler = new CloudSimpleHandler();
+    public PaperCommandManager<CommandSender> cmdHandler;
+    public AnnotationParser<CommandSender> cmdParser;
     public ConfigurationContents cfg = new ConfigurationContents();
     public IDataSourceConnector dataSource;
     public BuildingService buildingService = new BuildingService(this);
@@ -50,8 +58,12 @@ public final class ActiveBuilds extends JavaPlugin {
 //        getServer().getPluginManager().registerEvents();
 
         // Register commands
-        cmdHandler.enable(this);
-        cmdHandler.getParser().parse(new BuildCommandHandler(this));
+        try {
+            cmdHandler = new PaperCommandManager<>(this, CommandExecutionCoordinator.simpleCoordinator(), Function.identity(), Function.identity());
+            cmdParser = new AnnotationParser<>(cmdHandler, CommandSender.class, parserParameters -> SimpleCommandMeta.empty());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
 
         // auto-schedule event to run on the configured interval (20 ticks * 60 seconds per minute * checkInterval minutes)
         var scheduler = getServer().getScheduler();

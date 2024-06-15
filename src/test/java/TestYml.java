@@ -50,8 +50,4 @@ public class TestYml {
         logger.info(cfgFile.toString());
     }
 
-    @Test
-    public void testing(){
-        logger.info(String.format("STONE_PICKAXE is item: %s", Material.getMaterial("STONE_PICKAXE").isItem()));
-    }
 }

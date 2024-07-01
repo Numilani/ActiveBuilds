@@ -1,10 +1,5 @@
 package me.numilani.activebuilds;
 
-import cloud.commandframework.annotations.AnnotationParser;
-import cloud.commandframework.execution.CommandExecutionCoordinator;
-import cloud.commandframework.meta.SimpleCommandMeta;
-import cloud.commandframework.paper.PaperCommandManager;
-import com.bergerkiller.bukkit.common.cloud.CloudSimpleHandler;
 import com.bergerkiller.bukkit.common.config.FileConfiguration;
 import lombok.experimental.ExtensionMethod;
 import me.numilani.activebuilds.commands.BuildCommandHandler;
@@ -13,20 +8,21 @@ import me.numilani.activebuilds.data.SqliteDataSourceConnector;
 import me.numilani.activebuilds.objects.ConfigurationContents;
 import me.numilani.activebuilds.services.BuildingService;
 import me.numilani.activebuilds.utils.ItemStackHelper;
-import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
+import org.incendo.cloud.annotations.AnnotationParser;
+import org.incendo.cloud.execution.ExecutionCoordinator;
+import org.incendo.cloud.meta.SimpleCommandMeta;
+import org.incendo.cloud.paper.LegacyPaperCommandManager;
+import org.incendo.cloud.paper.PaperCommandManager;
 
 import java.sql.SQLException;
-import java.util.Arrays;
-import java.util.function.Function;
 
 @ExtensionMethod(ItemStackHelper.class)
 public final class ActiveBuilds extends JavaPlugin {
 //    public CloudSimpleHandler cmdHandler = new CloudSimpleHandler();
-    public PaperCommandManager<CommandSender> cmdHandler;
+    public LegacyPaperCommandManager<CommandSender> manager;
     public AnnotationParser<CommandSender> cmdParser;
     public ConfigurationContents cfg = new ConfigurationContents();
     public IDataSourceConnector dataSource;
@@ -59,12 +55,14 @@ public final class ActiveBuilds extends JavaPlugin {
 
         // Register commands
         try {
-            cmdHandler = new PaperCommandManager<>(this, CommandExecutionCoordinator.simpleCoordinator(), Function.identity(), Function.identity());
-            cmdParser = new AnnotationParser<>(cmdHandler, CommandSender.class, parserParameters -> SimpleCommandMeta.empty());
+            manager = LegacyPaperCommandManager.createNative(this, ExecutionCoordinator.simpleCoordinator());
+            cmdParser = new AnnotationParser<>(manager, CommandSender.class, parserParameters -> SimpleCommandMeta.empty());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
 
+        cmdParser.parse(new BuildCommandHandler(this));
+        
         // auto-schedule event to run on the configured interval (20 ticks * 60 seconds per minute * checkInterval minutes)
         var scheduler = getServer().getScheduler();
         checkIntervalTask = scheduler.runTaskTimer(this, () -> {

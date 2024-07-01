@@ -1,8 +1,5 @@
 package me.numilani.activebuilds.commands;
 
-import cloud.commandframework.annotations.Argument;
-import cloud.commandframework.annotations.CommandMethod;
-import cloud.commandframework.annotations.CommandPermission;
 import io.github.bananapuncher714.nbteditor.NBTEditor;
 import me.numilani.activebuilds.ActiveBuilds;
 import me.numilani.activebuilds.utils.BlockLocationHelper;
@@ -11,12 +8,15 @@ import org.bukkit.block.Container;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
+import org.incendo.cloud.annotations.Argument;
+import org.incendo.cloud.annotations.Command;
+import org.incendo.cloud.annotations.Permission;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-@CommandPermission("activebuilds.admin")
+@Permission("activebuilds.admin")
 public class BuildCommandHandler {
     private ActiveBuilds plugin;
 
@@ -24,7 +24,7 @@ public class BuildCommandHandler {
         this.plugin = plugin;
     }
 
-    @CommandMethod("ab buildingtype list")
+    @Command("ab buildingtype list")
     public void getBuildingTypeInfo(CommandSender sender) throws SQLException {
         sender.sendMessage("=== BUILDING TYPES ===");
         for (var type : plugin.dataSource.getAllBuildingTypes(true))
@@ -41,7 +41,7 @@ public class BuildCommandHandler {
         }
     }
 
-    @CommandMethod("ab buildingtype create <name>")
+    @Command("ab buildingtype create <name>")
     public void createBuildingType(CommandSender sender, @Argument("name") String name) throws SQLException {
         if (plugin.dataSource.getBuildingType(name, false) != null){
             sender.sendMessage("That buildingtype already exists!");
@@ -51,7 +51,7 @@ public class BuildCommandHandler {
         sender.sendMessage(String.format("Buildingtype %s created! Be sure to set its inputs/outputs!", name));
     }
 
-    @CommandMethod("ab buildingtype update <name> inputs")
+    @Command("ab buildingtype update <name> inputs")
     public void setBuildingTypeInputs(CommandSender sender, @Argument("name") String name) throws SQLException{
         if (!(sender instanceof Player)){
             sender.sendMessage("You must run this command as a player!");
@@ -81,7 +81,7 @@ public class BuildCommandHandler {
         plugin.dataSource.updateBuildingTypeInputs(name, serializedItems);
     }
 
-    @CommandMethod("ab buildingtype update <name> outputs")
+    @Command("ab buildingtype update <name> outputs")
     public void setBuildingTypeOutputs(CommandSender sender, @Argument("name") String name) throws SQLException{
         if (!(sender instanceof Player)){
             sender.sendMessage("You must run this command as a player!");
@@ -111,7 +111,7 @@ public class BuildCommandHandler {
         plugin.dataSource.updateBuildingTypeOutputs(name, serializedItems);
     }
 
-    @CommandMethod("ab buildingtype remove <name>")
+    @Command("ab buildingtype remove <name>")
     public void removeBuildingType(CommandSender sender, @Argument("name") String name) throws SQLException{
         if (plugin.dataSource.getBuildingType(name, false) == null){
             sender.sendMessage("That buildingtype doesn't exist!");
@@ -121,7 +121,7 @@ public class BuildCommandHandler {
         sender.sendMessage(String.format("Buildingtype %s removed!", name));
     }
 
-    @CommandMethod("ab building create <name> <type>")
+    @Command("ab building create <name> <type>")
     public void createBuilding(CommandSender sender, @Argument("name") String name, @Argument("type") String type) throws SQLException {
 //        var x = plugin.cfg.getBuildings().stream().filter(bldg -> bldg.Name.equals(type)).findFirst();
         var x = plugin.dataSource.getAllBuildingTypes(true).stream().filter(bldg -> bldg.Name.equals(type)).findFirst();
@@ -143,7 +143,7 @@ public class BuildCommandHandler {
 
     }
 
-    @CommandMethod("ab building list")
+    @Command("ab building list")
     public void listBuildings(CommandSender sender) throws SQLException{
         var buildings = plugin.dataSource.getAllBuildings();
 
@@ -162,7 +162,7 @@ public class BuildCommandHandler {
         }
     }
 
-    @CommandMethod("ab building update <name> input")
+    @Command("ab building update <name> input")
     public void setBuildingInput(CommandSender sender, @Argument("name") String name) throws SQLException {
         if (!(sender instanceof Player)){
             sender.sendMessage("You must run this command as a player!");
@@ -179,7 +179,7 @@ public class BuildCommandHandler {
         sender.sendMessage(String.format("Input chest for building %s set to chest at %s, %s, %s", name, target.getLocation().getBlockX(), target.getLocation().getBlockY(), target.getLocation().getBlockZ()));
     }
 
-    @CommandMethod("ab building update <name> output")
+    @Command("ab building update <name> output")
     public void setBuildingOutput(CommandSender sender, @Argument("name") String name) throws SQLException {
         if (!(sender instanceof Player)){
             sender.sendMessage("You must run this command as a player!");
@@ -196,7 +196,7 @@ public class BuildCommandHandler {
         sender.sendMessage(String.format("Output chest for building %s set to chest at %s, %s, %s", name, target.getLocation().getBlockX(), target.getLocation().getBlockY(), target.getLocation().getBlockZ()));
     }
 
-    @CommandMethod("ab building delete <name>")
+    @Command("ab building delete <name>")
     public void deleteBuilding(CommandSender sender, @Argument("name") String name){
         try{
             plugin.dataSource.removeBuilding(name);
@@ -207,13 +207,13 @@ public class BuildCommandHandler {
         }
     }
 
-    @CommandMethod("ab debug info")
+    @Command("ab debug info")
     public void PrintDebugInfo(CommandSender sender) throws SQLException {
         sender.sendMessage(String.format("Update interval: %s min", plugin.cfg.getCheckInterval()));
         sender.sendMessage(String.format("Last building update: %s", plugin.dataSource.getLastBuildingUpdateTime().toString()));
     }
 
-    @CommandMethod("ab debug list-all-types")
+    @Command("ab debug list-all-types")
     public void getInvalidBuildingTypeInfo(CommandSender sender) throws SQLException {
         sender.sendMessage("=== BUILDING TYPES ===");
         for (var type : plugin.dataSource.getAllBuildingTypes(false))
@@ -229,15 +229,15 @@ public class BuildCommandHandler {
             }
         }
     }
-
-    @CommandMethod("ab debug run-now")
+    
+    @Command("ab debug run-now")
     public void RunNow(CommandSender sender) throws SQLException {
 
         plugin.buildingService.runBuildingUpdate();
         sender.sendMessage("Buildings updated!");
     }
 
-    @CommandMethod("ab reload")
+    @Command("ab reload")
     public void ReloadConfig(CommandSender sender){
         plugin.loadConfig(true);
         sender.sendMessage("Config reloaded!");

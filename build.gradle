@@ -1,7 +1,7 @@
 plugins {
     id 'java'
     id 'com.github.johnrengelman.shadow' version '7.1.2'
-    id 'io.freefair.lombok' version '8.3'
+    id 'io.freefair.lombok' version '8.6'
     id 'idea'
 }
 
@@ -37,7 +37,7 @@ dependencies {
     compileOnly 'org.bergerhealer.cloud.commandframework:cloud-paper:1.6.0'
     compileOnly 'org.bergerhealer.cloud.commandframework:cloud-annotations:1.8.0-SNAPSHOT'
     compileOnly 'org.bergerhealer.cloud.commandframework:cloud-minecraft-extras:1.8.0-SNAPSHOT'
-    implementation 'io.github.bananapuncher714:nbteditor:7.19.0'
+    implementation 'io.github.bananapuncher714:nbteditor:7.19.3'
     testImplementation platform('org.junit:junit-bom:5.10.0')
     testImplementation 'org.junit.jupiter:junit-jupiter'
 }
